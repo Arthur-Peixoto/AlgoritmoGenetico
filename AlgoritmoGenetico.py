@@ -51,108 +51,42 @@ def criarPopulacao(tamPopulacao):
 
     return populacao
 
-# Função de seleção de pares usando torneio
 def selecao(populacao):
-    selecionado = []
+    selecionados = []
+    aptidoes = [funcao(individuo) for individuo in populacao]
 
-    sorteio = rd.sample(range(0, len(populacao)), len(populacao))
-    cont = 0
-    teste = 0
-    while teste != 2:
-        temp = []
+    total_aptidoes = sum(aptidoes)
+    probabilidade_selecao = [aptidao / total_aptidoes for aptidao in aptidoes]
 
-        for x in range(2):
-            temp.append(populacao[sorteio[cont]])
-            cont += 1
+    for _ in range(len(populacao)):
+        selecionado1 = rd.choices(populacao, probabilidade_selecao)[0]
+        selecionado2 = rd.choices(populacao, probabilidade_selecao)[0]
+        selecionados.append((selecionado1, selecionado2))
 
-        if temp[0][0] > temp[1][0]:
-            selecionado.append(temp[0])
-        else:
-            selecionado.append(temp[1])
+    return selecionados
 
-        teste += 1
-
-    return selecionado
-
-# Função de cruzamento de indivíduos selecionados
+# Função de cruzamento de indivíduos selecionados (melhorada)
 def cruzamento(selecionados):
-    populacao = []
-    populacao.append(selecionados[0][1])
-    populacao.append(selecionados[1][1])
+    nova_populacao = []
 
-    corte = rd.randint(1, 2)
+    for pai1, pai2 in selecionados:
+        # Escolher dois pontos de corte distintos
+        pontos_de_corte = sorted(rd.sample(range(len(pai1)), 2))
 
-    if corte == 2:
-        # Primeiro par ordenado em binário
-        x = decimalParaBinario(populacao[0][0])
-        primeiraPartex = x[0:2]
-        segundaPartex = x[2:3]
+        ponto_corte1, ponto_corte2 = pontos_de_corte[0], pontos_de_corte[1]
 
-        y = decimalParaBinario(populacao[0][1])
-        primeiraPartey = y[0:2]
-        segundaPartey = y[2:3]
+        # Realizar o cruzamento de dois pontos
+        filho1 = pai1[:ponto_corte1] + pai2[ponto_corte1:ponto_corte2] + pai1[ponto_corte2:]
+        filho2 = pai2[:ponto_corte1] + pai1[ponto_corte1:ponto_corte2] + pai2[ponto_corte2:]
 
-        # Segundo par ordenado em binário
-        x2 = decimalParaBinario(populacao[1][0])
-        primeiraPartex2 = x2[0:2]
-        segundaPartex2 = x2[2:3]
+        # Aplicar a mutação aos filhos
+        filho1 = mutacao(filho1)
+        filho2 = mutacao(filho2)
 
-        y2 = decimalParaBinario(populacao[1][1])
-        primeiraPartey2 = y2[0:2]
-        segundaPartey2 = y2[2:3]
+        nova_populacao.append(filho1)
+        nova_populacao.append(filho2)
 
-        # Fazendo Cruzamento X
-        filho1 = (
-            binarioParaDecimal(primeiraPartex + segundaPartex2), binarioParaDecimal(primeiraPartey + segundaPartey2))
-        filho2 = (
-            binarioParaDecimal(primeiraPartex2 + segundaPartex), binarioParaDecimal(primeiraPartey2 + segundaPartey))
-
-        mutacao = rd.randint(0, 100)
-
-        # Mutação
-        if mutacao <= 2:
-            filho1 = (filho1[0] >> 2, filho1[1] >> 2)
-            filho2 = (filho2[0] >> 2, filho2[1] >> 2)
-
-        populacao.append(filho1)
-        populacao.append(filho2)
-
-    else:
-        # Primeiro par ordenado em binário
-        x = decimalParaBinario(populacao[0][0])
-        primeiraPartex = x[0:1]
-        segundaPartex = x[1:3]
-
-        y = decimalParaBinario(populacao[0][1])
-        primeiraPartey = y[0:1]
-        segundaPartey = y[1:3]
-
-        # Segundo par ordenado em binário
-        x2 = decimalParaBinario(populacao[1][0])
-        primeiraPartex2 = x2[0:1]
-        segundaPartex2 = x2[1:3]
-
-        y2 = decimalParaBinario(populacao[1][1])
-        primeiraPartey2 = y2[0:1]
-        segundaPartey2 = y2[1:3]
-
-        # Fazendo Cruzamento X
-        filho1 = (
-            binarioParaDecimal(primeiraPartex + segundaPartex2), binarioParaDecimal(primeiraPartey + segundaPartey2))
-        filho2 = (
-            binarioParaDecimal(primeiraPartex2 + segundaPartex), binarioParaDecimal(primeiraPartey2 + segundaPartey))
-
-        mutacao = rd.randint(0, 100)
-
-        # Mutação
-        if mutacao <= 2:
-            filho1 = (filho1[0] >> 2, filho1[1] >> 2)
-            filho2 = (filho2[0] >> 2, filho2[1] >> 2)
-
-        populacao.append(filho1)
-        populacao.append(filho2)
-
-    return populacao
+    return nova_populacao
 
 plotgrafico = []
 num = 0
